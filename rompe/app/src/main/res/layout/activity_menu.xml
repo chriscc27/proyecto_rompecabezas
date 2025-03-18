@@ -1,0 +1,83 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/wood_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Descripción del juego -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/text_background"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="Bienvenido al juego de rompecabezas. Selecciona una opción para comenzar."
+        android:textColor="@color/white"
+        android:textSize="18sp" />
+
+    <!-- Spinner para seleccionar el tamaño del rompecabezas -->
+    <Spinner
+        android:id="@+id/sizeSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/spinner_background"
+        android:padding="12dp"
+        android:spinnerMode="dropdown" />
+
+    <!-- Botón para el rompecabezas normal -->
+    <Button
+        android:id="@+id/btnNormal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button_background"
+        android:elevation="4dp"
+        android:padding="16dp"
+        android:text="Rompecabezas Normal"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+    <!-- Botón para subir imagen -->
+    <Button
+        android:id="@+id/btnSubirImagen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button_background"
+        android:elevation="4dp"
+        android:padding="16dp"
+        android:text="Subir Imagen"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+    <!-- Botón para tomar foto -->
+    <Button
+        android:id="@+id/btnTomarFoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button_background"
+        android:elevation="4dp"
+        android:padding="16dp"
+        android:text="Tomar Fotografía"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+    <!-- Nuevo botón para puntuaciones -->
+    <Button
+        android:id="@+id/btnPuntuaciones"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_background"
+        android:elevation="4dp"
+        android:padding="16dp"
+        android:text="Puntuaciones"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+</LinearLayout>

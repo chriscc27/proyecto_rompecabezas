@@ -1,0 +1,41 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@drawable/wood_background">
+
+    <!-- Spinner para seleccionar tamaño -->
+    <Spinner
+        android:id="@+id/sizeSpinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:entries="@array/puzzle_sizes"
+        android:spinnerMode="dropdown"
+        android:padding="16dp"
+        android:background="@drawable/spinner_background"
+        android:popupBackground="@drawable/spinner_dropdown_background"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Lista de puntuaciones -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvScores"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:scrollbars="vertical"/>
+
+    <!-- Botón de regreso -->
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Volver"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        android:padding="16dp"
+        android:layout_marginTop="24dp"/>
+
+</LinearLayout>
