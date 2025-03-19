@@ -18,6 +18,17 @@
         android:popupBackground="@drawable/spinner_dropdown_background"
         android:layout_marginBottom="24dp"/>
 
+    <TextView
+        android:id="@+id/tvNoRecords"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No existen registros disponibles"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="16dp" />
+
+
     <!-- Lista de puntuaciones -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvScores"

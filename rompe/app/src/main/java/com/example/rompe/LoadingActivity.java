@@ -48,14 +48,37 @@ public class LoadingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_loading);
 
         // Mostrar dato curioso aleatorio
-        TextView txtDato = findViewById(R.id.txtDatoCurioso); // Asegúrate de que el ID coincida con tu XML
+        TextView txtDato = findViewById(R.id.txtDatoCurioso);
         int indiceAleatorio = new Random().nextInt(datosCuriosos.length);
         txtDato.setText(datosCuriosos[indiceAleatorio]);
 
+        // Obtener datos del intent
+        Intent incomingIntent = getIntent();
+        String targetActivity = incomingIntent.getStringExtra("target_activity");
+        Bundle extras = incomingIntent.getExtras();
+
         // Redirigir después de 3 segundos
         new Handler().postDelayed(() -> {
-            startActivity(new Intent(this, MenuActivity.class));
-            finish();
-        }, 3000);
+            try {
+                if (targetActivity != null && !targetActivity.isEmpty()) {
+                    Class<?> destination = Class.forName(targetActivity);
+                    Intent intent = new Intent(this, destination);
+
+                    if (extras != null) {
+                        intent.putExtras(extras); // Pasar todos los parámetros
+                    }
+
+                    startActivity(intent);
+                } else {
+                    // Fallback si no hay actividad destino
+                    startActivity(new Intent(this, MenuActivity.class));
+                }
+                finish(); // Cerrar LoadingActivity
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                startActivity(new Intent(this, MenuActivity.class));
+                finish();
+            }
+        }, 1000);
     }
 }

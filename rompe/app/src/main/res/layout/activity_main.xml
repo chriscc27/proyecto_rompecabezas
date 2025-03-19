@@ -43,19 +43,21 @@
     <!-- Contenedor del puzzle con fondo oscuro -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="#80000000"
+
         android:padding="8dp">
 
         <GridLayout
             android:id="@+id/gridLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:columnCount="3"
-            android:rowCount="3"
+            android:layout_height="355dp"
             android:alignmentMode="alignMargins"
-            android:padding="4dp"/>
+            android:layout_gravity="center"
+            android:columnCount="3"
+            android:padding="4dp"
+            android:background="#80000000"
+            android:rowCount="3" />
 
     </FrameLayout>
 

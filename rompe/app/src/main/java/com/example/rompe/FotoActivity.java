@@ -19,6 +19,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.graphics.Color;
+import androidx.appcompat.app.AlertDialog;
+import android.widget.EditText;
+
+
 
 
 import android.Manifest;
@@ -76,6 +80,7 @@ public class FotoActivity extends AppCompatActivity {
     private Button btnResolver;
     private Bitmap originalBitmap;
     private int emptyPositionSolved;
+    private int moves;
 
     private static class PuzzlePiece {
         Bitmap bitmap;
@@ -120,6 +125,8 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     private void createPuzzle(Bitmap bitmap) {
+        moves = 0; // Variable para contar los movimientos
+
         int totalPieces = puzzleSize * puzzleSize;
         int pieceSize = bitmap.getWidth() / puzzleSize;
         puzzlePieces = new ArrayList<>();
@@ -188,12 +195,6 @@ public class FotoActivity extends AppCompatActivity {
     }
 
 
-    private void regeneratePuzzle() {
-        if (originalBitmap != null) {
-            createPuzzle(originalBitmap); // Usar la imagen original guardada
-        }
-    }
-
 
 
 
@@ -234,6 +235,76 @@ public class FotoActivity extends AppCompatActivity {
                 regeneratePuzzle();
             });
         }).start();
+    }
+
+    private void mostrarDialogoReintentar() {
+        new AlertDialog.Builder(this)
+                .setTitle("Sigue intentándolo")
+                .setMessage("¿Quieres probar de nuevo?")
+                .setPositiveButton("Aceptar", (dialog, which) -> {
+                    regeneratePuzzle();
+                    startTimer();
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .setCancelable(false)
+                .show();
+    }
+
+
+    private void mostrarDialogoExito() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("¡Felicidades!");
+        builder.setMessage("Introduce tu nombre para guardar la puntuación:");
+
+        final EditText input = new EditText(this);
+        builder.setView(input);
+
+        builder.setPositiveButton("Guardar", (dialog, which) -> {
+            String nombre = input.getText().toString().trim();
+            if(nombre.isEmpty()) nombre = "Anónimo";
+            saveScoreToDatabase(nombre);
+        });
+
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+
+        builder.setCancelable(false)
+                .create()
+                .show();
+    }
+
+    // Modifica el método navegarAPuntuaciones
+    private void navegarAPuntuaciones() {
+        Intent loadingIntent = new Intent(this, LoadingActivity.class);
+        loadingIntent.putExtra("target_activity", ScoreActivity.class.getName());
+        startActivity(loadingIntent);
+        finish();
+    }
+
+    // Añade este método para reiniciar el temporizador al regenerar
+    private void regeneratePuzzle() {
+        seconds = 0;
+        if (originalBitmap != null) {
+            createPuzzle(originalBitmap);
+        }
+        timerTextView.setText("Tiempo: 00:00");
+    }
+
+    // Modifica el método saveScoreToDatabase
+    private void saveScoreToDatabase(String name) {
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        Score score = new Score(
+                0,
+                name,
+                seconds,
+                moves,
+                puzzleSize + "x" + puzzleSize,
+                null
+        );
+        dbHelper.saveScore(score);
+
+        // Mostrar confirmación y navegar
+        Toast.makeText(this, "Puntuación guardada", Toast.LENGTH_SHORT).show();
+        navegarAPuntuaciones();
     }
 
     private int calcularHeuristicaOptimizada(int[] estado) {
@@ -341,8 +412,16 @@ public class FotoActivity extends AppCompatActivity {
                     displayPuzzle(puzzlePieces);
                 }, i * 500);
             }
+
+            // Mostrar diálogo después de completar la animación
+            new Handler(Looper.getMainLooper()).postDelayed(() ->
+                            mostrarDialogoReintentar(),
+                    camino.size() * 500 + 1000
+            );
         });
     }
+
+
 
     private List<Nodo> reconstruirCamino(Nodo nodoFinal) {
         List<Nodo> camino = new ArrayList<>();
@@ -408,7 +487,7 @@ public class FotoActivity extends AppCompatActivity {
         }
     }
 
-    // Método actualizado para verificar solución
+    // Modifica el método isPuzzleSolved
     private boolean isPuzzleSolved() {
         for (int i = 0; i < puzzlePieces.size(); i++) {
             PuzzlePiece piece = puzzlePieces.get(i);
@@ -418,11 +497,16 @@ public class FotoActivity extends AppCompatActivity {
                 return false;
             }
         }
+        stopTimer();
+        mostrarDialogoExito(); // Reemplaza el Toast por este diálogo
         return true;
     }
 
     private void startTimer() {
         isTimerRunning = true;
+        // Limpiar cualquier callback pendiente
+        handler.removeCallbacksAndMessages(null);
+
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -430,6 +514,7 @@ public class FotoActivity extends AppCompatActivity {
                     seconds++;
                     timerTextView.setText(String.format(Locale.getDefault(),
                             "Tiempo: %02d:%02d", seconds / 60, seconds % 60));
+                    // Programar siguiente ejecución
                     handler.postDelayed(this, 1000);
                 }
             }

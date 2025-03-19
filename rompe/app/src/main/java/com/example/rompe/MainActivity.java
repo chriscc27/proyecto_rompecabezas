@@ -153,10 +153,11 @@ public class MainActivity extends AppCompatActivity {
             numeros.add(String.valueOf(i));
         }
 
-        // Calcular posición vacía y número faltante
-        int emptyIndex = (puzzleSize * puzzleSize) / 2;
-        missingNumber = emptyIndex + 1; // Número que debería estar en la posición vacía
-        numeros.set(emptyIndex, "");
+        // Seleccionar posición vacía aleatoria
+        Random random = new Random();
+        int emptyIndex = random.nextInt(numeros.size());
+        missingNumber = Integer.parseInt(numeros.get(emptyIndex)); // Obtener el número que será faltante
+        numeros.set(emptyIndex, ""); // Establecer posición vacía
 
         solution.addAll(numeros);
 
@@ -316,10 +317,11 @@ public class MainActivity extends AppCompatActivity {
         return vecinos;
     }
 
+    // Modifica el método mostrarSolucion:
     private void mostrarSolucion(List<Nodo> camino) {
         new Handler(Looper.getMainLooper()).post(() -> {
             stopTimer();
-            btnResolver.setEnabled(true); // Reactivar el botón
+            btnResolver.setEnabled(true);
             for (int i = 0; i < camino.size(); i++) {
                 final int index = i;
                 handler.postDelayed(() -> {
@@ -327,6 +329,9 @@ public class MainActivity extends AppCompatActivity {
                     actualizarGrid(nodo.estado, nodo.emptyRow, nodo.emptyCol);
                 }, i * 500L);
             }
+
+            // Mostrar diálogo después de completar la solución
+            handler.postDelayed(this::mostrarDialogoReintentar, camino.size() * 500L);
         });
     }
 
@@ -428,14 +433,35 @@ public class MainActivity extends AppCompatActivity {
                 name,
                 seconds,
                 moves,
-                puzzleSize + "x" + puzzleSize, // Tipo de puzzle
-                null // La fecha se genera automáticamente
-
-
-
+                puzzleSize + "x" + puzzleSize,
+                null
         );
         dbHelper.saveScore(score);
         Toast.makeText(this, "Puntuación guardada", Toast.LENGTH_SHORT).show();
+
+        navegarAPuntuaciones();
+    }
+
+    private void navegarAPuntuaciones() {
+        Intent loadingIntent = new Intent(this, LoadingActivity.class);
+        // Pasar el nombre completo de la clase destino
+        loadingIntent.putExtra("target_activity", ScoreActivity.class.getName());
+        startActivity(loadingIntent);
+        finish(); // Opcional: decide si cerrar la actividad actual
+    }
+
+    private void mostrarDialogoReintentar() {
+        new AlertDialog.Builder(this)
+                .setTitle("¡Sigue intentándolo!")
+                .setMessage("¿Quieres probar de nuevo?")
+                .setPositiveButton("Aceptar", (dialog, which) -> {
+                    mezclarFichas();
+                    startTimer();
+                    txtNumeroFaltante.setVisibility(View.VISIBLE);
+                    scoreSaved = false;
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private boolean esAdyacente(int fila1, int col1, int fila2, int col2) {

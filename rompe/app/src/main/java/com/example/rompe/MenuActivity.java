@@ -49,9 +49,29 @@ public class MenuActivity extends AppCompatActivity {
         });
 
         // Configurar listeners
-        btnNormal.setOnClickListener(v -> startGame(MainActivity.class));
-        btnSubirImagen.setOnClickListener(v -> startFotoActivity("galeria"));
-        btnTomarFoto.setOnClickListener(v -> startFotoActivity("camara"));
+// Dentro del onCreate de MenuActivity
+        btnNormal.setOnClickListener(v -> {
+            Intent loadingIntent = new Intent(MenuActivity.this, LoadingActivity.class);
+            loadingIntent.putExtra("target_activity", MainActivity.class.getName());
+            loadingIntent.putExtra("puzzleSize", puzzleSize);
+            startActivity(loadingIntent);
+        });
+
+        btnSubirImagen.setOnClickListener(v -> {
+            Intent loadingIntent = new Intent(MenuActivity.this, LoadingActivity.class);
+            loadingIntent.putExtra("target_activity", FotoActivity.class.getName());
+            loadingIntent.putExtra("modo", "galeria");
+            loadingIntent.putExtra("puzzleSize", puzzleSize);
+            startActivity(loadingIntent);
+        });
+
+        btnTomarFoto.setOnClickListener(v -> {
+            Intent loadingIntent = new Intent(MenuActivity.this, LoadingActivity.class);
+            loadingIntent.putExtra("target_activity", FotoActivity.class.getName());
+            loadingIntent.putExtra("modo", "camara");
+            loadingIntent.putExtra("puzzleSize", puzzleSize);
+            startActivity(loadingIntent);
+        });
         btnPuntuaciones.setOnClickListener(v -> startActivity(new Intent(this, ScoreActivity.class)));
     }
 

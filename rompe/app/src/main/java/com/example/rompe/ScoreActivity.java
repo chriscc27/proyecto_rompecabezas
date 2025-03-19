@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.widget.TextView;
+
 
 import com.example.rompe.Score;
 import com.example.rompe.ScoreAdapter;
@@ -25,6 +27,8 @@ public class ScoreActivity extends AppCompatActivity {
     private ScoreAdapter adapter;
     private DatabaseHelper dbHelper;
     private Spinner sizeSpinner;
+    private TextView tvNoRecords; // TextView para mostrar el mensaje de "No hay registros"
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,7 @@ public class ScoreActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
         sizeSpinner = findViewById(R.id.sizeSpinner);
         recyclerView = findViewById(R.id.rvScores);
+        tvNoRecords = findViewById(R.id.tvNoRecords); // Referencia al TextView en el XML
 
         setupSpinner();
         setupRecyclerView();
@@ -68,6 +73,15 @@ public class ScoreActivity extends AppCompatActivity {
 
     private void loadScores(int puzzleSize) {
         List<Score> scores = dbHelper.getTopScores(puzzleSize + "x" + puzzleSize, 10);
+
+        if (scores.isEmpty()) {
+            tvNoRecords.setVisibility(View.VISIBLE); // Muestra el mensaje
+            recyclerView.setVisibility(View.GONE);   // Oculta la lista
+        } else {
+            tvNoRecords.setVisibility(View.GONE);    // Oculta el mensaje
+            recyclerView.setVisibility(View.VISIBLE); // Muestra la lista
+        }
+
         adapter.updateData(scores);
     }
 
