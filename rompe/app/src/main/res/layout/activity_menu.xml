@@ -1,4 +1,5 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/wood_background"
@@ -6,7 +7,19 @@
     android:orientation="vertical"
     android:padding="24dp">
 
+    <!-- Logo en la parte superior -->
+
+
     <!-- Descripción del juego -->
+
+    <ImageView
+        android:layout_width="399dp"
+        android:layout_height="189dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="32dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/logooo" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -30,25 +43,27 @@
         android:spinnerMode="dropdown" />
 
     <!-- Botón para el rompecabezas normal -->
+
+    <!-- Botón para subir imagen -->
+
     <Button
         android:id="@+id/btnNormal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="263dp"
+        android:layout_height="50dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/button_background"
+        android:background="@drawable/cartel"
         android:elevation="4dp"
         android:padding="16dp"
         android:text="Rompecabezas Normal"
         android:textColor="@color/white"
         android:textSize="16sp" />
 
-    <!-- Botón para subir imagen -->
     <Button
         android:id="@+id/btnSubirImagen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="153dp"
+        android:layout_height="50dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/button_background"
+        android:background="@drawable/cartel"
         android:elevation="4dp"
         android:padding="16dp"
         android:text="Subir Imagen"
@@ -58,10 +73,10 @@
     <!-- Botón para tomar foto -->
     <Button
         android:id="@+id/btnTomarFoto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="196dp"
+        android:layout_height="50dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/button_background"
+        android:background="@drawable/cartel"
         android:elevation="4dp"
         android:padding="16dp"
         android:text="Tomar Fotografía"
@@ -71,9 +86,9 @@
     <!-- Nuevo botón para puntuaciones -->
     <Button
         android:id="@+id/btnPuntuaciones"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/button_background"
+        android:layout_width="158dp"
+        android:layout_height="50dp"
+        android:background="@drawable/cartel"
         android:elevation="4dp"
         android:padding="16dp"
         android:text="Puntuaciones"

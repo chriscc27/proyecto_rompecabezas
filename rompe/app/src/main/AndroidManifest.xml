@@ -5,21 +5,21 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-
     <!-- Declaración de hardware (cámara no requerida) -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/rikito"
+        android:label="Vortex Puzzle"
+        android:roundIcon="@mipmap/rikito_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Actividad principal -->
+        <!-- Actividad de carga inicial -->
         <activity
-            android:name=".MenuActivity"
+            android:name=".LoadingActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,14 +27,20 @@
             </intent-filter>
         </activity>
 
+        <!-- Menú principal (ya NO es la actividad principal) -->
+        <activity
+            android:name=".MenuActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
         <!-- Otras actividades -->
         <activity android:name=".MainActivity" />
-        <activity android:name=".FotoActivity" /> <!-- Declarar FotoActivity -->
+        <activity android:name=".FotoActivity" />
 
         <activity
             android:name=".ScoreActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/> <!-- Ajusta el tema según necesites -->
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

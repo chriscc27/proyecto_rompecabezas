@@ -18,7 +18,7 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        // Inicializar componentes
+        // Inicializara componentes
         Button btnNormal = findViewById(R.id.btnNormal);
         Button btnSubirImagen = findViewById(R.id.btnSubirImagen);
         Button btnTomarFoto = findViewById(R.id.btnTomarFoto);

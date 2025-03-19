@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">rompe</string>
+    <string name="app_name">Vortex Puzzle</string>
 
     <string-array name="puzzle_sizes">
         <item>2x2</item>
@@ -9,5 +9,7 @@
         <item>6x6</item>
         <item>7x7</item>
     </string-array>
+
+
 
 </resources>

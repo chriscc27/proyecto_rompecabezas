@@ -55,10 +55,17 @@ public class MainActivity extends AppCompatActivity {
     private int moves = 0;
     private boolean scoreSaved = false;
 
+
+    private TextView txtNumeroFaltante;
+    private int missingNumber;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Inicializar nuevo componente
+        txtNumeroFaltante = findViewById(R.id.txtNumeroFaltante);
 
         // Validar y obtener el tamaño del puzzle
         Intent intent = getIntent();
@@ -86,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         // Inicialización diferida del grid
         inicializarGrid();
     }
+
 
 
 
@@ -118,9 +126,8 @@ public class MainActivity extends AppCompatActivity {
                         textView.setLayoutParams(params);
                         textView.setGravity(Gravity.CENTER);
                         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, tileSize / 4);
-                        // Configuración adicional
                         textView.setTextColor(Color.WHITE);
-                        textView.setShadowLayer(4f, 0f, 2f, Color.BLACK); // Sombra para mejor contraste
+                        textView.setShadowLayer(4f, 0f, 2f, Color.BLACK);
 
                         grid[i][j] = textView;
                         gridLayout.addView(textView);
@@ -139,72 +146,89 @@ public class MainActivity extends AppCompatActivity {
 
     private void generarSolucion() {
         solution.clear();
-        char currentChar = 'A';
-        for (int i = 0; i < puzzleSize * puzzleSize; i++) {
-            if (i == puzzleSize * puzzleSize - 1) {
-                solution.add("");
-            } else {
-                solution.add(String.valueOf(currentChar++));
-            }
+        List<String> numeros = new ArrayList<>();
+
+        // Generar números del 1 al N*N
+        for (int i = 1; i <= puzzleSize * puzzleSize; i++) {
+            numeros.add(String.valueOf(i));
         }
+
+        // Calcular posición vacía y número faltante
+        int emptyIndex = (puzzleSize * puzzleSize) / 2;
+        missingNumber = emptyIndex + 1; // Número que debería estar en la posición vacía
+        numeros.set(emptyIndex, "");
+
+        solution.addAll(numeros);
+
+        // Actualizar UI
+        runOnUiThread(() -> txtNumeroFaltante.setText("Falta el: " + missingNumber));
     }
 
     private void mezclarFichas() {
-
         moves = 0;
         scoreSaved = false;
         seconds = 0;
 
-        List<String> letras = new ArrayList<>(solution);
-        int emptyIndex = letras.indexOf("");
-        int currentRow = emptyIndex / puzzleSize;
-        int currentCol = emptyIndex % puzzleSize;
+        txtNumeroFaltante.setVisibility(View.VISIBLE);
+
+        // Mezclar usando movimientos válidos (simula jugadas reales)
+        List<String> numeros = new ArrayList<>(solution);
         Random random = new Random();
 
-        for (int i = 0; i < 1000; i++) {
-            List<Integer> possibleMoves = new ArrayList<>();
-            if (currentRow > 0) possibleMoves.add((currentRow - 1) * puzzleSize + currentCol);
-            if (currentRow < puzzleSize - 1) possibleMoves.add((currentRow + 1) * puzzleSize + currentCol);
-            if (currentCol > 0) possibleMoves.add(currentRow * puzzleSize + (currentCol - 1));
-            if (currentCol < puzzleSize - 1) possibleMoves.add(currentRow * puzzleSize + (currentCol + 1));
+        int emptyIndex = numeros.indexOf("");
+        int emptyRow = emptyIndex / puzzleSize;
+        int emptyCol = emptyIndex % puzzleSize;
 
-            if (!possibleMoves.isEmpty()) {
-                int newPos = possibleMoves.get(random.nextInt(possibleMoves.size()));
-                Collections.swap(letras, emptyIndex, newPos);
-                emptyIndex = newPos;
-                currentRow = emptyIndex / puzzleSize;
-                currentCol = emptyIndex % puzzleSize;
-            }
+        // Realizar 1000 movimientos aleatorios válidos
+        for (int i = 0; i < 1000; i++) {
+            List<int[]> movimientosValidos = new ArrayList<>();
+            if (emptyRow > 0) movimientosValidos.add(new int[]{emptyRow - 1, emptyCol}); // Arriba
+            if (emptyRow < puzzleSize - 1) movimientosValidos.add(new int[]{emptyRow + 1, emptyCol}); // Abajo
+            if (emptyCol > 0) movimientosValidos.add(new int[]{emptyRow, emptyCol - 1}); // Izquierda
+            if (emptyCol < puzzleSize - 1) movimientosValidos.add(new int[]{emptyRow, emptyCol + 1}); // Derecha
+
+            int[] movimiento = movimientosValidos.get(random.nextInt(movimientosValidos.size()));
+            int newRow = movimiento[0];
+            int newCol = movimiento[1];
+            int newIndex = newRow * puzzleSize + newCol;
+
+            // Intercambiar posiciones
+            Collections.swap(numeros, emptyIndex, newIndex);
+
+            // Actualizar posición vacía
+            emptyIndex = newIndex;
+            emptyRow = newRow;
+            emptyCol = newCol;
         }
 
+        // Aplicar al grid
         int index = 0;
         for (int i = 0; i < puzzleSize; i++) {
             for (int j = 0; j < puzzleSize; j++) {
-                String letra = letras.get(index++);
-                grid[i][j].setText(letra);
-                asignarColor(letra, grid[i][j]);
-                if (letra.isEmpty()) {
-                    emptyRow = i;
-                    emptyCol = j;
+                String numero = numeros.get(index++);
+                grid[i][j].setText(numero);
+                asignarColor(numero, grid[i][j]);
+                if (numero.isEmpty()) {
+                    this.emptyRow = i;
+                    this.emptyCol = j;
                 }
             }
         }
     }
 
-    private void asignarColor(String letra, TextView tv) {
+    private void asignarColor(String numero, TextView tv) {
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
         shape.setCornerRadius(16f);
 
-        if (letra.isEmpty()) {
+        if (numero.isEmpty()) {
             shape.setColor(Color.TRANSPARENT);
             shape.setStroke(2, Color.WHITE);
         } else {
-            // Generación de colores más diversos
-            int charIndex = letra.charAt(0) - 'A';
-            float hue = (charIndex * 30f) % 360f; // Mayor variación en el tono
-            float saturation = 0.7f + (charIndex % 3) * 0.1f; // Saturación variable (70%-90%)
-            float brightness = 0.8f - (charIndex % 2) * 0.1f; // Brillo variable (70%-80%)
+            int num = Integer.parseInt(numero);
+            float hue = (num * 30f) % 360f; // Colores distintos por número
+            float saturation = 0.7f + (num % 3) * 0.1f; // Variar saturación
+            float brightness = 0.8f - (num % 2) * 0.1f; // Variar brillo
 
             int color = Color.HSVToColor(new float[]{hue, saturation, brightness});
             shape.setColor(color);
@@ -212,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
 
         tv.setBackground(shape);
         tv.setTextColor(Color.WHITE);
-        tv.setShadowLayer(6f, 0f, 2f, Color.BLACK); // Sombra más pronunciada
+        tv.setShadowLayer(6f, 0f, 2f, Color.BLACK);
     }
 
     private void resolverRompecabezas() {
@@ -259,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
             String letra = estado.get(i);
             if (letra.isEmpty()) continue;
 
+            // Posición correcta según la solución dinámica
             int posicionCorrecta = solution.indexOf(letra);
             int filaActual = i / puzzleSize;
             int colActual = i % puzzleSize;
@@ -342,6 +367,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     private void configurarListeners() {
         for (int i = 0; i < puzzleSize; i++) {
             for (int j = 0; j < puzzleSize; j++) {
@@ -354,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void moverFicha(int fila, int columna) {
         if (esAdyacente(fila, columna, emptyRow, emptyCol)) {
-            moves++; // Contar movimientos
+            moves++;
             intercambiar(fila, columna, emptyRow, emptyCol);
             emptyRow = fila;
             emptyCol = columna;
@@ -368,9 +394,10 @@ public class MainActivity extends AppCompatActivity {
                     scoreSaved = true;
                 }
             }
-
         }
     }
+
+
 
     private void showNameDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -415,6 +442,7 @@ public class MainActivity extends AppCompatActivity {
         return Math.abs(fila1 - fila2) + Math.abs(col1 - col2) == 1;
     }
 
+
     private void intercambiar(int fila1, int col1, int fila2, int col2) {
         TextView ficha1 = grid[fila1][col1];
         TextView ficha2 = grid[fila2][col2];
@@ -430,12 +458,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean esResuelto() {
-        return currentState.equals(solution);
+        // Verificar si el número faltante está en su posición
+        int emptyIndex = emptyRow * puzzleSize + emptyCol;
+        boolean resuelto = currentState.equals(solution);
+
+        if (resuelto) {
+            txtNumeroFaltante.setVisibility(View.INVISIBLE);
+        }
+        return resuelto;
     }
 
     private void startTimer() {
         isTimerRunning = true;
-        seconds = 0; // Reiniciar contador
+        seconds = 0;
         handler.post(new Runnable() {
             @Override
             public void run() {
