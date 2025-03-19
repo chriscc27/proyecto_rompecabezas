@@ -18,6 +18,8 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Color;
+
 
 import android.Manifest;
 import java.util.Comparator;
@@ -49,6 +51,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+
 
 public class FotoActivity extends AppCompatActivity {
 
@@ -70,6 +75,8 @@ public class FotoActivity extends AppCompatActivity {
     private int puzzleSize;
     private Button btnResolver;
     private Bitmap originalBitmap;
+    private int emptyPositionSolved;
+
     private static class PuzzlePiece {
         Bitmap bitmap;
         int originalPosition;
@@ -118,34 +125,56 @@ public class FotoActivity extends AppCompatActivity {
         puzzlePieces = new ArrayList<>();
         solvedPuzzle = new ArrayList<>();
 
-        // Generar estado resuelto con la pieza vacía al final
+        // Generar posición vacía aleatoria para el estado resuelto
+        emptyPositionSolved = new Random().nextInt(totalPieces);
+
+        // Crear estado resuelto con vacío en posición aleatoria
         for (int i = 0; i < totalPieces; i++) {
-            int row = i / puzzleSize;
-            int col = i % puzzleSize;
-            Bitmap piece = Bitmap.createBitmap(bitmap, col * pieceSize, row * pieceSize, pieceSize, pieceSize);
-            PuzzlePiece puzzlePiece = new PuzzlePiece(piece, i);
-            puzzlePieces.add(puzzlePiece);
-            solvedPuzzle.add(puzzlePiece);
+            if (i == emptyPositionSolved) {
+                solvedPuzzle.add(new PuzzlePiece(null, i));
+            } else {
+                int row = i / puzzleSize;
+                int col = i % puzzleSize;
+                Bitmap piece = Bitmap.createBitmap(bitmap, col * pieceSize, row * pieceSize, pieceSize, pieceSize);
+                solvedPuzzle.add(new PuzzlePiece(piece, i));
+            }
         }
 
-        // Crear y colocar pieza vacía en la última posición
-        PuzzlePiece emptyPiece = new PuzzlePiece(null, totalPieces - 1);
-        puzzlePieces.set(totalPieces - 1, emptyPiece);
-        emptyPosition = totalPieces - 1;
+        // Crear imagen de referencia con espacio vacío
+        Bitmap solvedBitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(solvedBitmap);
+        Paint emptyPaint = new Paint();
+        emptyPaint.setColor(Color.TRANSPARENT);
 
-        // Mezclar con movimientos válidos aleatorios
+        for (int i = 0; i < solvedPuzzle.size(); i++) {
+            PuzzlePiece piece = solvedPuzzle.get(i);
+            int row = i / puzzleSize;
+            int col = i % puzzleSize;
+
+            if (piece.bitmap == null) {
+                canvas.drawRect(col * pieceSize, row * pieceSize,
+                        (col + 1) * pieceSize, (row + 1) * pieceSize, emptyPaint);
+            } else {
+                canvas.drawBitmap(piece.bitmap, col * pieceSize, row * pieceSize, null);
+            }
+        }
+        runOnUiThread(() -> fullImageView.setImageBitmap(solvedBitmap));
+
+        // Mezclar piezas desde el estado resuelto
+        puzzlePieces = new ArrayList<>(solvedPuzzle);
+        emptyPosition = emptyPositionSolved;
         Random random = new Random();
         int shuffleMoves = 1000;
+
         for (int i = 0; i < shuffleMoves; i++) {
             List<Integer> possibleMoves = new ArrayList<>();
             int row = emptyPosition / puzzleSize;
             int col = emptyPosition % puzzleSize;
 
-            // Calcular movimientos posibles
-            if (row > 0) possibleMoves.add(emptyPosition - puzzleSize); // Arriba
-            if (row < puzzleSize - 1) possibleMoves.add(emptyPosition + puzzleSize); // Abajo
-            if (col > 0) possibleMoves.add(emptyPosition - 1); // Izquierda
-            if (col < puzzleSize - 1) possibleMoves.add(emptyPosition + 1); // Derecha
+            if (row > 0) possibleMoves.add(emptyPosition - puzzleSize);
+            if (row < puzzleSize - 1) possibleMoves.add(emptyPosition + puzzleSize);
+            if (col > 0) possibleMoves.add(emptyPosition - 1);
+            if (col < puzzleSize - 1) possibleMoves.add(emptyPosition + 1);
 
             if (!possibleMoves.isEmpty()) {
                 int newPos = possibleMoves.get(random.nextInt(possibleMoves.size()));
@@ -297,14 +326,12 @@ public class FotoActivity extends AppCompatActivity {
                 final int index = i;
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     Nodo nodo = camino.get(index);
-
-                    // Convertir el array de estado a lista de PuzzlePiece
                     List<PuzzlePiece> nuevoEstado = new ArrayList<>(puzzleSize * puzzleSize);
+
                     for (int pos : nodo.estado) {
-                        if (pos == -1) { // Pieza vacía
-                            nuevoEstado.add(new PuzzlePiece(null, puzzleSize * puzzleSize - 1));
+                        if (pos == -1) {
+                            nuevoEstado.add(new PuzzlePiece(null, emptyPositionSolved));
                         } else {
-                            // Buscar la pieza correspondiente en el estado resuelto
                             nuevoEstado.add(solvedPuzzle.get(pos));
                         }
                     }
@@ -381,24 +408,17 @@ public class FotoActivity extends AppCompatActivity {
         }
     }
 
+    // Método actualizado para verificar solución
     private boolean isPuzzleSolved() {
-        boolean allPiecesCorrect = true;
-        int emptyIndex = -1;
-
         for (int i = 0; i < puzzlePieces.size(); i++) {
             PuzzlePiece piece = puzzlePieces.get(i);
             if (piece.bitmap == null) {
-                emptyIndex = i;
-            } else {
-                if (piece.originalPosition != i) {
-                    allPiecesCorrect = false;
-                }
+                if (i != emptyPositionSolved) return false;
+            } else if (piece.originalPosition != i) {
+                return false;
             }
         }
-
-        boolean isEmptyAtCorrectPosition = (emptyIndex == puzzlePieces.size() - 1);
-
-        return allPiecesCorrect && isEmptyAtCorrectPosition;
+        return true;
     }
 
     private void startTimer() {

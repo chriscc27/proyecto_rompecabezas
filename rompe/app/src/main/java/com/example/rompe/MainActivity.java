@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("puzzleSize")) {
             puzzleSize = intent.getIntExtra("puzzleSize", 3);
         }
-        puzzleSize = Math.max(3, Math.min(puzzleSize, 6)); // Limitar rango
+        puzzleSize = Math.max(2, Math.min(puzzleSize, 7)); // Permite 2x2 hasta 6x6
 
         // Inicializar componentes
         gridLayout = findViewById(R.id.gridLayout);
