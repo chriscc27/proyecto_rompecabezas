@@ -1,0 +1,72 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/wood_background"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Contenedor superior para cronómetro y botón -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
+
+        <TextView
+            android:id="@+id/timerTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/timer_background"
+            android:elevation="4dp"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="Tiempo: 00:00"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnResolver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:elevation="4dp"
+            android:padding="12dp"
+            android:text="Resolver"
+            android:textColor="@color/white"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
+
+    <GridLayout
+        android:id="@+id/gridLayout"
+        android:layout_width="match_parent"
+        android:layout_height="355dp"
+        android:layout_gravity="center"
+        android:alignmentMode="alignMargins"
+        android:columnCount="3"
+        android:padding="4dp"
+        android:rowCount="3"
+        android:background="@drawable/image_border"
+        android:layout_marginTop="100dp" /> <!-- Aquí agregas el margen superior -->
+
+
+
+    <!-- Campo de número faltante -->
+    <TextView
+        android:id="@+id/txtNumeroFaltante"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/timer_background"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:padding="12dp"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"/>
+
+</LinearLayout>

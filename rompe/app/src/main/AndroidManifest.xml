@@ -37,6 +37,8 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".FotoActivity" />
 
+        <activity android:name=".NormalActivity" />
+
         <activity
             android:name=".ScoreActivity"
             android:exported="false"

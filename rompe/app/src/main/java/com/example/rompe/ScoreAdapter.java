@@ -14,10 +14,7 @@ public class ScoreAdapter extends RecyclerView.Adapter<ScoreAdapter.ViewHolder> 
     private List<Score> scores;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvPosition;
-        TextView tvName;
-        TextView tvTime;
-        TextView tvMoves;
+        TextView tvPosition, tvName, tvTime, tvMoves;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -25,6 +22,7 @@ public class ScoreAdapter extends RecyclerView.Adapter<ScoreAdapter.ViewHolder> 
             tvName = itemView.findViewById(R.id.tvName);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvMoves = itemView.findViewById(R.id.tvMoves);
+
         }
     }
 
@@ -44,11 +42,18 @@ public class ScoreAdapter extends RecyclerView.Adapter<ScoreAdapter.ViewHolder> 
         Score score = scores.get(position);
         holder.tvPosition.setText(String.format("%d°", position + 1));
         holder.tvName.setText(score.getName());
-        holder.tvTime.setText(String.format("%02d:%02d",
-                score.getTime() / 60, score.getTime() % 60));
+        holder.tvTime.setText(formatTime(score.getTime()));
         holder.tvMoves.setText(String.format("%d movimientos", score.getMoves()));
+
     }
 
+
+
+    private String formatTime(int seconds) {
+        int minutes = seconds / 60;
+        int remainingSeconds = seconds % 60;
+        return String.format("%02d:%02d", minutes, remainingSeconds);
+    }
     @Override
     public int getItemCount() {
         return scores.size();

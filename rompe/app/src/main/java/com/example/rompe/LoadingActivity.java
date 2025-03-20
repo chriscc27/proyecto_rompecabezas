@@ -47,17 +47,16 @@ public class LoadingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
 
-        // Mostrar dato curioso aleatorio
         TextView txtDato = findViewById(R.id.txtDatoCurioso);
         int indiceAleatorio = new Random().nextInt(datosCuriosos.length);
         txtDato.setText(datosCuriosos[indiceAleatorio]);
 
-        // Obtener datos del intent
+
         Intent incomingIntent = getIntent();
         String targetActivity = incomingIntent.getStringExtra("target_activity");
         Bundle extras = incomingIntent.getExtras();
 
-        // Redirigir después de 3 segundos
+
         new Handler().postDelayed(() -> {
             try {
                 if (targetActivity != null && !targetActivity.isEmpty()) {
@@ -65,12 +64,12 @@ public class LoadingActivity extends AppCompatActivity {
                     Intent intent = new Intent(this, destination);
 
                     if (extras != null) {
-                        intent.putExtras(extras); // Pasar todos los parámetros
+                        intent.putExtras(extras);
                     }
 
                     startActivity(intent);
                 } else {
-                    // Fallback si no hay actividad destino
+
                     startActivity(new Intent(this, MenuActivity.class));
                 }
                 finish(); // Cerrar LoadingActivity

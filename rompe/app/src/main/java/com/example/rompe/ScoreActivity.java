@@ -1,3 +1,4 @@
+// ScoreActivity.java
 package com.example.rompe;
 
 import android.os.Bundle;
@@ -5,30 +6,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
 import java.util.List;
-import android.widget.TextView;
-
-
-import com.example.rompe.Score;
-import com.example.rompe.ScoreAdapter;
-import com.example.rompe.DatabaseHelper;
-
 
 public class ScoreActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private ScoreAdapter adapter;
     private DatabaseHelper dbHelper;
-    private Spinner sizeSpinner;
-    private TextView tvNoRecords; // TextView para mostrar el mensaje de "No hay registros"
-
+    private Spinner sizeSpinner, modalitySpinner;
+    private TextView tvNoRecords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,53 +29,72 @@ public class ScoreActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
         sizeSpinner = findViewById(R.id.sizeSpinner);
+        modalitySpinner = findViewById(R.id.modalitySpinner);
         recyclerView = findViewById(R.id.rvScores);
-        tvNoRecords = findViewById(R.id.tvNoRecords); // Referencia al TextView en el XML
+        tvNoRecords = findViewById(R.id.tvNoRecords);
 
-        setupSpinner();
-        setupRecyclerView();
+
+        recyclerView = findViewById(R.id.rvScores);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Faltaba esto
+        adapter = new ScoreAdapter(new ArrayList<>()); // Inicializar el adaptador con lista vacía
+        recyclerView.setAdapter(adapter); // Asignar el adaptador al RecyclerView
+        setupSpinners();
+
         setupBackButton();
     }
 
-    private void setupSpinner() {
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+    private void setupSpinners() {
+        // Spinner para tamaños
+        ArrayAdapter<CharSequence> sizeAdapter = ArrayAdapter.createFromResource(
                 this, R.array.puzzle_sizes, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sizeSpinner.setAdapter(adapter);
+        sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sizeSpinner.setAdapter(sizeAdapter);
 
-        sizeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        // Spinner para modalidades
+        ArrayAdapter<CharSequence> modalityAdapter = ArrayAdapter.createFromResource(
+                this, R.array.modalities, android.R.layout.simple_spinner_item);
+        modalityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        modalitySpinner.setAdapter(modalityAdapter);
+
+        AdapterView.OnItemSelectedListener listener = new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedSize = parent.getItemAtPosition(position).toString();
-                int puzzleSize = Integer.parseInt(selectedSize.split("x")[0]);
-                loadScores(puzzleSize);
+                loadScores();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        };
+
+        sizeSpinner.setOnItemSelectedListener(listener);
+        modalitySpinner.setOnItemSelectedListener(listener);
     }
 
-    private void setupRecyclerView() {
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ScoreAdapter(new ArrayList<>());
-        recyclerView.setAdapter(adapter);
-        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+    private void loadScores() {
+        String selectedSize = sizeSpinner.getSelectedItem().toString();
+        String modality = modalitySpinner.getSelectedItem().toString().toLowerCase();
+        int puzzleSize = Integer.parseInt(selectedSize.split("x")[0]);
+
+        List<Score> scores = dbHelper.getTopScores(
+                puzzleSize + "x" + puzzleSize,
+                modality,
+                10
+        );
+
+        updateUI(scores);
     }
 
-    private void loadScores(int puzzleSize) {
-        List<Score> scores = dbHelper.getTopScores(puzzleSize + "x" + puzzleSize, 10);
-
+    private void updateUI(List<Score> scores) {
         if (scores.isEmpty()) {
-            tvNoRecords.setVisibility(View.VISIBLE); // Muestra el mensaje
-            recyclerView.setVisibility(View.GONE);   // Oculta la lista
+            tvNoRecords.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
         } else {
-            tvNoRecords.setVisibility(View.GONE);    // Oculta el mensaje
-            recyclerView.setVisibility(View.VISIBLE); // Muestra la lista
+            tvNoRecords.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
         }
-
         adapter.updateData(scores);
     }
+
 
     private void setupBackButton() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());

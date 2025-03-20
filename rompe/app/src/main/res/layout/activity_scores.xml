@@ -6,17 +6,41 @@
     android:padding="24dp"
     android:background="@drawable/wood_background">
 
-    <!-- Spinner para seleccionar tamaño -->
-    <Spinner
-        android:id="@+id/sizeSpinner"
-        android:layout_width="wrap_content"
+    <!-- Contenedor para los Spinners -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@array/puzzle_sizes"
-        android:spinnerMode="dropdown"
-        android:padding="16dp"
-        android:background="@drawable/spinner_background"
-        android:popupBackground="@drawable/spinner_dropdown_background"
-        android:layout_marginBottom="24dp"/>
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="24dp">
+
+        <!-- Spinner para seleccionar tamaño -->
+        <Spinner
+            android:id="@+id/sizeSpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:entries="@array/puzzle_sizes"
+            android:spinnerMode="dropdown"
+            android:padding="16dp"
+            android:background="@drawable/spinner_background"
+            android:popupBackground="@drawable/spinner_dropdown_background"
+            android:layout_marginEnd="8dp"/>
+
+        <!-- Spinner para seleccionar modalidad -->
+        <Spinner
+            android:id="@+id/modalitySpinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:entries="@array/modalities"
+            android:spinnerMode="dropdown"
+            android:padding="16dp"
+            android:background="@drawable/spinner_background"
+            android:popupBackground="@drawable/spinner_dropdown_background"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvNoRecords"
@@ -28,7 +52,6 @@
         android:visibility="gone"
         android:padding="16dp" />
 
-
     <!-- Lista de puntuaciones -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvScores"
@@ -38,15 +61,17 @@
         android:padding="8dp"
         android:scrollbars="vertical"/>
 
-    <!-- Botón de regreso -->
+
     <Button
         android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="196dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/cartel"
+        android:elevation="4dp"
+        android:padding="16dp"
         android:text="Volver"
         android:textColor="@color/white"
-        android:background="@drawable/button_background"
-        android:padding="16dp"
-        android:layout_marginTop="24dp"/>
+        android:textSize="16sp" />
 
 </LinearLayout>

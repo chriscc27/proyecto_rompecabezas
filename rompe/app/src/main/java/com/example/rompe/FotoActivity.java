@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
@@ -22,18 +21,12 @@ import android.graphics.Color;
 import androidx.appcompat.app.AlertDialog;
 import android.widget.EditText;
 
-
-
-
 import android.Manifest;
 import java.util.Comparator;
 
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
-
-
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -58,14 +51,11 @@ import java.util.Random;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-
 public class FotoActivity extends AppCompatActivity {
-
     private static final int PICK_IMAGE = 1;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
     private static final int REQUEST_STORAGE_PERMISSION = 101;
-
     private GridLayout gridLayout;
     private ImageView fullImageView;
     private TextView timerTextView;
@@ -81,6 +71,7 @@ public class FotoActivity extends AppCompatActivity {
     private Bitmap originalBitmap;
     private int emptyPositionSolved;
     private int moves;
+    private File photoFile;
 
     private static class PuzzlePiece {
         Bitmap bitmap;
@@ -165,15 +156,21 @@ public class FotoActivity extends AppCompatActivity {
                 canvas.drawBitmap(piece.bitmap, col * pieceSize, row * pieceSize, null);
             }
         }
-        runOnUiThread(() -> fullImageView.setImageBitmap(solvedBitmap));
+
+        runOnUiThread(() -> {
+            fullImageView.setImageBitmap(solvedBitmap);
+            fullImageView.setBackgroundResource(R.drawable.image_border); // Añadir el marco
+            fullImageView.setPadding(20, 20, 20, 20); // Ajustar según necesidad
+        });
 
         // Mezclar piezas desde el estado resuelto
         puzzlePieces = new ArrayList<>(solvedPuzzle);
         emptyPosition = emptyPositionSolved;
         Random random = new Random();
-        int shuffleMoves = 1000;
+        int shuffleMoves = 125;
+        int movesDone = 0;
 
-        for (int i = 0; i < shuffleMoves; i++) {
+        while (movesDone < shuffleMoves) {
             List<Integer> possibleMoves = new ArrayList<>();
             int row = emptyPosition / puzzleSize;
             int col = emptyPosition % puzzleSize;
@@ -187,6 +184,7 @@ public class FotoActivity extends AppCompatActivity {
                 int newPos = possibleMoves.get(random.nextInt(possibleMoves.size()));
                 Collections.swap(puzzlePieces, emptyPosition, newPos);
                 emptyPosition = newPos;
+                movesDone++;
             }
         }
 
@@ -195,9 +193,9 @@ public class FotoActivity extends AppCompatActivity {
     }
 
 
-
-
-
+    private int getCachedHeuristic(int[] estado) {
+        return calcularHeuristicaOptimizada(estado) * 2;  // Prioriza nodos más profundos
+    }
     private void resolverRompecabezas() {
         new Thread(() -> {
             PriorityQueue<Nodo> openSet = new PriorityQueue<>(Comparator.comparingInt(n -> n.costoTotal));
@@ -254,7 +252,9 @@ public class FotoActivity extends AppCompatActivity {
     private void mostrarDialogoExito() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("¡Felicidades!");
-        builder.setMessage("Introduce tu nombre para guardar la puntuación:");
+        String mensaje = "Resuelto en " + moves + " movimientos y " + seconds + " segundos!\n"
+                + "Introduce tu nombre para guardar la puntuación:";
+        builder.setMessage(mensaje);
 
         final EditText input = new EditText(this);
         builder.setView(input);
@@ -298,11 +298,11 @@ public class FotoActivity extends AppCompatActivity {
                 seconds,
                 moves,
                 puzzleSize + "x" + puzzleSize,
-                null
+                null,
+                "imagen"
         );
         dbHelper.saveScore(score);
 
-        // Mostrar confirmación y navegar
         Toast.makeText(this, "Puntuación guardada", Toast.LENGTH_SHORT).show();
         navegarAPuntuaciones();
     }
@@ -322,7 +322,6 @@ public class FotoActivity extends AppCompatActivity {
 
             h += Math.abs(targetRow - currentRow) + Math.abs(targetCol - currentCol);
 
-            // Conflictos lineales en fila
             if (currentRow == targetRow) {
                 for (int j = i + 1; j < estado.length; j++) {
                     int otherVal = estado[j];
@@ -337,35 +336,22 @@ public class FotoActivity extends AppCompatActivity {
         return h;
     }
 
-    private final Map<String, Integer> heuristicCache = new HashMap<>();
 
-    private int getCachedHeuristic(int[] estado) {
-        String key = Arrays.toString(estado);
-        Integer h = heuristicCache.get(key);
-        if (h == null) {
-            h = calcularHeuristicaOptimizada(estado);
-            heuristicCache.put(key, h);
-        }
-        return h;
-    }
 
     private List<Nodo> generarVecinos(Nodo nodo) {
         List<Nodo> vecinos = new ArrayList<>(4);
         int emptyPos = nodo.emptyPos;
         int puzzleSize = this.puzzleSize;
 
-        // Generar movimientos sin objetos temporales
-        if (emptyPos % puzzleSize > 0) { // Izquierda
-            agregarVecino(nodo, emptyPos - 1, vecinos);
-        }
-        if (emptyPos % puzzleSize < puzzleSize - 1) { // Derecha
-            agregarVecino(nodo, emptyPos + 1, vecinos);
-        }
-        if (emptyPos >= puzzleSize) { // Arriba
-            agregarVecino(nodo, emptyPos - puzzleSize, vecinos);
-        }
-        if (emptyPos < puzzleSize * (puzzleSize - 1)) { // Abajo
-            agregarVecino(nodo, emptyPos + puzzleSize, vecinos);
+        // Generar movimientos en orden aleatorio para mejor distribución
+        List<Integer> direcciones = Arrays.asList(-1, 1, -puzzleSize, puzzleSize);
+        Collections.shuffle(direcciones);
+
+        for (int dir : direcciones) {
+            int newPos = emptyPos + dir;
+            if (isValidMove(emptyPos, newPos)) {
+                agregarVecino(nodo, newPos, vecinos);
+            }
         }
         return vecinos;
     }
@@ -377,10 +363,6 @@ public class FotoActivity extends AppCompatActivity {
 
         int heuristica = calcularHeuristicaOptimizada(nuevoEstado);
         vecinos.add(new Nodo(nuevoEstado, nuevaPos, padre.costo + 1, heuristica, padre));
-    }
-
-    private boolean esEstadoVisitado(Map<String, Integer> visitados, String claveEstado, int nuevoCosto) {
-        return visitados.containsKey(claveEstado) && visitados.get(claveEstado) <= nuevoCosto;
     }
 
     private boolean isValidMove(int currentPos, int newPos) {
@@ -434,14 +416,6 @@ public class FotoActivity extends AppCompatActivity {
         return camino;
     }
 
-    private String estadoToString(List<PuzzlePiece> estado) {
-        int[] stateArray = new int[estado.size()];
-        for (int i = 0; i < estado.size(); i++) {
-            stateArray[i] = estado.get(i).originalPosition;
-        }
-        return Arrays.toString(stateArray);
-    }
-
     private void displayPuzzle(List<PuzzlePiece> pieces) {
         runOnUiThread(() -> {
             gridLayout.removeAllViews();
@@ -485,9 +459,9 @@ public class FotoActivity extends AppCompatActivity {
                 Toast.makeText(this, "¡Resuelto en " + seconds + " segundos!", Toast.LENGTH_LONG).show();
             }
         }
+        moves++;
     }
 
-    // Modifica el método isPuzzleSolved
     private boolean isPuzzleSolved() {
         for (int i = 0; i < puzzlePieces.size(); i++) {
             PuzzlePiece piece = puzzlePieces.get(i);
@@ -498,7 +472,7 @@ public class FotoActivity extends AppCompatActivity {
             }
         }
         stopTimer();
-        mostrarDialogoExito(); // Reemplaza el Toast por este diálogo
+        mostrarDialogoExito();
         return true;
     }
 
@@ -535,7 +509,7 @@ public class FotoActivity extends AppCompatActivity {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             try {
-                File photoFile = createImageFile();
+                photoFile = createImageFile(); // Guardar en la variable miembro
                 photoUri = FileProvider.getUriForFile(this,
                         "com.example.rompe.fileprovider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
@@ -565,14 +539,18 @@ public class FotoActivity extends AppCompatActivity {
                     Uri uri = data.getData();
                     bitmap = loadAndRotateBitmap(uri);
                 } else if (requestCode == REQUEST_IMAGE_CAPTURE) {
-                    bitmap = loadAndRotateBitmap(photoUri);
+                    // Leer EXIF desde el archivo directamente
+                    ExifInterface exif = new ExifInterface(photoFile.getAbsolutePath());
+                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                    bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+                    bitmap = rotateBitmap(bitmap, orientation);
                 }
 
                 if (bitmap != null) {
                     bitmap = processBitmap(bitmap);
-                    originalBitmap = processBitmap(bitmap);;
-                    fullImageView.setImageBitmap(bitmap);
-                    createPuzzle(bitmap);
+                    originalBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+                    fullImageView.setImageBitmap(originalBitmap);
+                    createPuzzle(originalBitmap);
                     startTimer();
                 }
             } catch (Exception e) {
@@ -584,39 +562,66 @@ public class FotoActivity extends AppCompatActivity {
     private Bitmap loadAndRotateBitmap(Uri uri) throws IOException {
         InputStream inputStream = getContentResolver().openInputStream(uri);
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+        inputStream.close();
+
+        inputStream = getContentResolver().openInputStream(uri);
         ExifInterface exif = new ExifInterface(inputStream);
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        inputStream.close();
+
         return rotateBitmap(bitmap, orientation);
     }
 
     private Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
         Matrix matrix = new Matrix();
         switch (orientation) {
-            case ExifInterface.ORIENTATION_ROTATE_90:
-                matrix.postRotate(90);
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.postScale(-1, 1);
                 break;
             case ExifInterface.ORIENTATION_ROTATE_180:
                 matrix.postRotate(180);
                 break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.postScale(1, -1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.postRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.postRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.postRotate(270);
+                matrix.postScale(-1, 1);
+                break;
             case ExifInterface.ORIENTATION_ROTATE_270:
                 matrix.postRotate(270);
                 break;
+            case ExifInterface.ORIENTATION_NORMAL:
+            default:
+                // Sin rotación
+                break;
         }
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+
+        try {
+            return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return bitmap;
+        }
     }
 
     private Bitmap processBitmap(Bitmap bitmap) {
-        int size = Math.min(bitmap.getWidth(), bitmap.getHeight());
-        Bitmap squared = Bitmap.createBitmap(bitmap,
-                (bitmap.getWidth() - size) / 2,
-                (bitmap.getHeight() - size) / 2,
-                size,
-                size
-        );
+        // Reducir muestreo para imágenes grandes
+        int inSampleSize = bitmap.getWidth() > 2000 ? 4 : 2;
 
-        // Optimizar según tamaño del puzzle
-        int targetSize = 200 * puzzleSize; // 400 para 2x2, 600 para 3x3, etc.
-        return Bitmap.createScaledBitmap(squared, targetSize, targetSize, true);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = inSampleSize;
+
+        // Recálculo del tamaño después del muestreo
+        int targetSize = 200 * puzzleSize;
+        return Bitmap.createScaledBitmap(bitmap, targetSize, targetSize, true);
     }
 
     @Override
@@ -629,7 +634,6 @@ public class FotoActivity extends AppCompatActivity {
         }
     }
 
-    // Modificar la clase Nodo para usar primitivos
     private static class Nodo {
         int[] estado; // Array de originalPositions (-1 = vacío)
         int emptyPos;

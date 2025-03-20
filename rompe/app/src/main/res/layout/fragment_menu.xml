@@ -28,20 +28,37 @@
         android:elevation="4dp"
         android:gravity="center"
         android:padding="16dp"
-        android:text="Bienvenido al juego de rompecabezas. Selecciona una opción para comenzar."
+        android:text="¡Bienvenido al desafío definitivo! ¿Listo para armar el rompecabezas y demostrar tu habilidad? Elige una opción y comencemos."
         android:textColor="@color/white"
         android:textSize="18sp" />
 
-    <!-- Spinner para seleccionar el tamaño del rompecabezas -->
-    <Spinner
-        android:id="@+id/sizeSpinner"
-        android:layout_width="wrap_content"
+    <!-- Contenedor para el selector de dificultad -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:background="@drawable/spinner_background"
-        android:padding="12dp"
-        android:spinnerMode="dropdown" />
+        android:orientation="vertical"
+        android:layout_marginBottom="24dp"
+        android:paddingHorizontal="16dp">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selecciona dificultad:"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
+
+        <Spinner
+            android:id="@+id/sizeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:background="@drawable/spinner_background"
+            android:popupBackground="@drawable/spinner_dropdown_background"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textAlignment="center"/>
+    </LinearLayout>
     <!-- Botón para el rompecabezas normal -->
 
     <!-- Botón para subir imagen -->
@@ -94,5 +111,7 @@
         android:text="Puntuaciones"
         android:textColor="@color/white"
         android:textSize="16sp" />
+
+
 
 </LinearLayout>

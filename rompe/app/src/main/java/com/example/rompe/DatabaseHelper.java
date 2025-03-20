@@ -5,25 +5,19 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import java.util.List;
 import java.util.ArrayList;
 
-
-
-
-
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "puzzle.db";
-    private static final int DATABASE_VERSION = 2;
-
-    // Tabla de puntuaciones
+    private static final int DATABASE_VERSION = 3;
     public static final String TABLE_SCORES = "scores";
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_TIME = "time";
     public static final String COLUMN_MOVES = "moves";
     public static final String COLUMN_TYPE = "type";
+    public static final String COLUMN_MODALITY = "modality";
     public static final String COLUMN_DATE = "date";
 
     private static final String CREATE_TABLE =
@@ -33,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_TIME + " INTEGER NOT NULL, " +
                     COLUMN_MOVES + " INTEGER NOT NULL, " +
                     COLUMN_TYPE + " TEXT NOT NULL, " +
+                    COLUMN_MODALITY + " TEXT NOT NULL, " + // Añadida modalidad
                     COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP);";
 
     public DatabaseHelper(Context context) {
@@ -44,17 +39,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE);
     }
 
-    public List<Score> getTopScores(String puzzleType, int limit) {
+    public List<Score> getTopScores(String puzzleType, String modality, int limit) {
         List<Score> scores = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // En DatabaseHelper.java, modifica la consulta en getTopScores
         String query = "SELECT * FROM " + TABLE_SCORES +
-                " WHERE `" + COLUMN_TYPE + "` = ?" +  // Usar backticks
+                " WHERE `" + COLUMN_TYPE + "` = ? AND `" + COLUMN_MODALITY + "` = ?" +
                 " ORDER BY `" + COLUMN_TIME + "` ASC, `" + COLUMN_MOVES + "` ASC" +
                 " LIMIT ?";
 
-        Cursor cursor = db.rawQuery(query, new String[]{puzzleType, String.valueOf(limit)});
+        Cursor cursor = db.rawQuery(query, new String[]{puzzleType, modality, String.valueOf(limit)});
 
         if (cursor.moveToFirst()) {
             do {
@@ -64,6 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIME)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MOVES)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MODALITY)), // Nueva modalidad
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE))
                 );
                 scores.add(score);
@@ -81,6 +76,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TIME, score.getTime());
         values.put(COLUMN_MOVES, score.getMoves());
         values.put(COLUMN_TYPE, score.getType());
+        values.put(COLUMN_MODALITY, score.getModalidad()); // Guardar modalidad
 
         db.insert(TABLE_SCORES, null, values);
         db.close();
@@ -88,8 +84,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCORES); // Usar la constante TABLE_SCORES
-        onCreate(db);
+        if (oldVersion < 3) {
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_SCORES);
+            onCreate(db);
+        }
     }
-
 }

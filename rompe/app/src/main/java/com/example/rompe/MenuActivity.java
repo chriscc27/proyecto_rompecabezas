@@ -16,7 +16,7 @@ public class MenuActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_menu);
+        setContentView(R.layout.fragment_menu);
 
         // Inicializara componentes
         Button btnNormal = findViewById(R.id.btnNormal);
@@ -49,10 +49,10 @@ public class MenuActivity extends AppCompatActivity {
         });
 
         // Configurar listeners
-// Dentro del onCreate de MenuActivity
+
         btnNormal.setOnClickListener(v -> {
             Intent loadingIntent = new Intent(MenuActivity.this, LoadingActivity.class);
-            loadingIntent.putExtra("target_activity", MainActivity.class.getName());
+            loadingIntent.putExtra("target_activity", NormalActivity.class.getName());
             loadingIntent.putExtra("puzzleSize", puzzleSize);
             startActivity(loadingIntent);
         });
