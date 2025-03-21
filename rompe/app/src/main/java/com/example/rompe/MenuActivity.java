@@ -75,16 +75,4 @@ public class MenuActivity extends AppCompatActivity {
         btnPuntuaciones.setOnClickListener(v -> startActivity(new Intent(this, ScoreActivity.class)));
     }
 
-    private void startGame(Class<?> activityClass) {
-        Intent intent = new Intent(this, activityClass);
-        intent.putExtra("puzzleSize", puzzleSize);
-        startActivity(intent);
-    }
-
-    private void startFotoActivity(String modo) {
-        Intent intent = new Intent(this, FotoActivity.class);
-        intent.putExtra("modo", modo);
-        intent.putExtra("puzzleSize", puzzleSize);
-        startActivity(intent);
-    }
 }

@@ -272,15 +272,13 @@ public class FotoActivity extends AppCompatActivity {
                 .show();
     }
 
-    // Modifica el método navegarAPuntuaciones
     private void navegarAPuntuaciones() {
         Intent loadingIntent = new Intent(this, LoadingActivity.class);
-        loadingIntent.putExtra("target_activity", ScoreActivity.class.getName());
+        loadingIntent.putExtra("ctarget_ativity", ScoreActivity.class.getName());
         startActivity(loadingIntent);
         finish();
     }
 
-    // Añade este método para reiniciar el temporizador al regenerar
     private void regeneratePuzzle() {
         seconds = 0;
         if (originalBitmap != null) {
@@ -289,7 +287,6 @@ public class FotoActivity extends AppCompatActivity {
         timerTextView.setText("Tiempo: 00:00");
     }
 
-    // Modifica el método saveScoreToDatabase
     private void saveScoreToDatabase(String name) {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         Score score = new Score(
