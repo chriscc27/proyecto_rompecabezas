@@ -7,9 +7,8 @@ public class Score {
     private int moves;
     private String type;
     private String date;
-    private String modalidad; // Nuevo atributo
+    private String modalidad;
 
-    // Constructor completo
     public Score(int id, String name, int time, int moves, String type, String date, String modalidad) {
         this.id = id;
         this.name = name;
@@ -20,7 +19,6 @@ public class Score {
         this.modalidad = modalidad;
     }
 
-    // Getters y Setters
     public int getId() {
         return id;
     }

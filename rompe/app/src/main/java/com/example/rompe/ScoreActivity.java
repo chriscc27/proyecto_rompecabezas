@@ -35,9 +35,9 @@ public class ScoreActivity extends AppCompatActivity {
 
 
         recyclerView = findViewById(R.id.rvScores);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this)); // Faltaba esto
-        adapter = new ScoreAdapter(new ArrayList<>()); // Inicializar el adaptador con lista vacía
-        recyclerView.setAdapter(adapter); // Asignar el adaptador al RecyclerView
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new ScoreAdapter(new ArrayList<>());
+        recyclerView.setAdapter(adapter);
         setupSpinners();
 
         setupBackButton();

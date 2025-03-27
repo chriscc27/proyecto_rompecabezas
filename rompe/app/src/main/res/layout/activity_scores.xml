@@ -52,7 +52,6 @@
         android:visibility="gone"
         android:padding="16dp" />
 
-    <!-- Lista de puntuaciones -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvScores"
         android:layout_width="match_parent"

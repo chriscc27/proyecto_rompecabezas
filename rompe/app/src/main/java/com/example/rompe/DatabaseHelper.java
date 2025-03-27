@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_TIME + " INTEGER NOT NULL, " +
                     COLUMN_MOVES + " INTEGER NOT NULL, " +
                     COLUMN_TYPE + " TEXT NOT NULL, " +
-                    COLUMN_MODALITY + " TEXT NOT NULL, " + // Añadida modalidad
+                    COLUMN_MODALITY + " TEXT NOT NULL, " +
                     COLUMN_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP);";
 
     public DatabaseHelper(Context context) {

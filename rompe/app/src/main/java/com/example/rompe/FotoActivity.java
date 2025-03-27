@@ -159,8 +159,8 @@ public class FotoActivity extends AppCompatActivity {
 
         runOnUiThread(() -> {
             fullImageView.setImageBitmap(solvedBitmap);
-            fullImageView.setBackgroundResource(R.drawable.image_border); // Añadir el marco
-            fullImageView.setPadding(20, 20, 20, 20); // Ajustar según necesidad
+            fullImageView.setBackgroundResource(R.drawable.image_border);
+            fullImageView.setPadding(20, 20, 20, 20);
         });
 
         // Mezclar piezas desde el estado resuelto
@@ -274,7 +274,7 @@ public class FotoActivity extends AppCompatActivity {
 
     private void navegarAPuntuaciones() {
         Intent loadingIntent = new Intent(this, LoadingActivity.class);
-        loadingIntent.putExtra("ctarget_ativity", ScoreActivity.class.getName());
+        loadingIntent.putExtra("target_activity", ScoreActivity.class.getName());
         startActivity(loadingIntent);
         finish();
     }
@@ -597,7 +597,6 @@ public class FotoActivity extends AppCompatActivity {
                 break;
             case ExifInterface.ORIENTATION_NORMAL:
             default:
-                // Sin rotación
                 break;
         }
 
@@ -610,13 +609,11 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     private Bitmap processBitmap(Bitmap bitmap) {
-        // Reducir muestreo para imágenes grandes
         int inSampleSize = bitmap.getWidth() > 2000 ? 4 : 2;
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = inSampleSize;
 
-        // Recálculo del tamaño después del muestreo
         int targetSize = 200 * puzzleSize;
         return Bitmap.createScaledBitmap(bitmap, targetSize, targetSize, true);
     }
@@ -632,7 +629,7 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     private static class Nodo {
-        int[] estado; // Array de originalPositions (-1 = vacío)
+        int[] estado;
         int emptyPos;
         int costo;
         int heuristica;

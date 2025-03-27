@@ -16,7 +16,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Actividad de carga inicial -->
         <activity
             android:name=".LoadingActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
@@ -27,14 +26,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Menú principal (ya NO es la actividad principal) -->
         <activity
             android:name=".MenuActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
-        <!-- Otras actividades -->
-        <activity android:name=".MainActivity" />
         <activity android:name=".FotoActivity" />
 
         <activity android:name=".NormalActivity" />

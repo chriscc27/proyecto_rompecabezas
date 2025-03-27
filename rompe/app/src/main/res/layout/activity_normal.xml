@@ -50,11 +50,10 @@
         android:padding="4dp"
         android:rowCount="3"
         android:background="@drawable/image_border"
-        android:layout_marginTop="100dp" /> <!-- Aquí agregas el margen superior -->
+        android:layout_marginTop="100dp" />
 
 
 
-    <!-- Campo de número faltante -->
     <TextView
         android:id="@+id/txtNumeroFaltante"
         android:layout_width="wrap_content"

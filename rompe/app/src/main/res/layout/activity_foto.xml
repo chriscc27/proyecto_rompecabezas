@@ -3,9 +3,8 @@
     android:layout_height="match_parent"
     android:background="@drawable/wood_background"
     android:orientation="vertical"
-    android:padding="16dp"> <!-- Fondo degradado -->
+    android:padding="16dp">
 
-    <!-- Imagen completa como guía -->
     <ImageView
         android:id="@+id/fullImageView"
         android:layout_width="200dp"
