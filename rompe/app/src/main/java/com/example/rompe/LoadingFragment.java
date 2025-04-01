@@ -60,7 +60,6 @@ public class LoadingFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Mostrar dato curioso
         TextView txtDato = view.findViewById(R.id.txtDatoCurioso);
         int indiceAleatorio = new Random().nextInt(datosCuriosos.length);
         txtDato.setText(datosCuriosos[indiceAleatorio]);
@@ -73,7 +72,6 @@ public class LoadingFragment extends Fragment {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             NavController navController = Navigation.findNavController(view);
 
-            // Usar when en lugar de switch para mejor legibilidad
             if (!targetFragment.isEmpty()) {
                 switch (targetFragment) {
                     case "NormalFragment":
@@ -83,7 +81,7 @@ public class LoadingFragment extends Fragment {
                         navController.navigate(R.id.action_loading_to_foto, args);
                         break;
                     case "ScoreFragment":
-                        //navController.navigate(R.id.action_loading_to_scores, args);
+                        navController.navigate(R.id.action_loading_to_scores, args);
                         break;
                     default:
                         navController.navigate(R.id.action_loading_to_menu, args);

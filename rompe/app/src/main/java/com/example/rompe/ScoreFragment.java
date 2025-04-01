@@ -8,6 +8,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,6 +31,8 @@ public class ScoreFragment extends Fragment {
     private DatabaseHelper dbHelper;
     private Spinner sizeSpinner, modalitySpinner;
     private TextView tvNoRecords;
+    private OnBackPressedCallback onBackPressedCallback;
+
 
 
 
@@ -92,6 +96,8 @@ public class ScoreFragment extends Fragment {
         modalitySpinner.setOnItemSelectedListener(listener);
     }
 
+
+
     private void loadScores() {
         String selectedSize = sizeSpinner.getSelectedItem().toString();
         String modality = modalitySpinner.getSelectedItem().toString().toLowerCase();
@@ -118,8 +124,14 @@ public class ScoreFragment extends Fragment {
     }
 
     private void setupBackButton(View view) {
-        view.findViewById(R.id.btnBack).setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp()
-        );
+        view.findViewById(R.id.btnBack).setOnClickListener(v -> {
+            Bundle args = new Bundle();
+            args.putString("target_fragment", "MenuFragment");
+
+            Navigation.findNavController(v).navigate(
+                    R.id.action_scores_to_menu,
+                    args
+            );
+        });
     }
 }

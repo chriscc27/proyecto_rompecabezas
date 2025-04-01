@@ -37,8 +37,6 @@ import java.util.Random;
 import java.util.Set;
 
 public class NormalFragment extends Fragment {
-
-    // Variables miembro (igual que en la Activity)
     private GridLayout gridLayout;
     private TextView[][] grid;
     private int emptyRow, emptyCol;
@@ -98,8 +96,6 @@ public class NormalFragment extends Fragment {
         isSolving = true;
         resolverRompecabezas();
     }
-
-
 
     private void inicializarGrid() {
         gridLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -503,10 +499,6 @@ public class NormalFragment extends Fragment {
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_normalFragment_to_scoresFragment);
     }
-
-
-
-
 
     @Override
     public void onDestroyView() {

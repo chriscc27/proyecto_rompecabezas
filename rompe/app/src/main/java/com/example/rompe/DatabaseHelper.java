@@ -58,7 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_TIME)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MOVES)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TYPE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MODALITY)), // Nueva modalidad
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MODALITY)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE))
                 );
                 scores.add(score);
@@ -76,7 +76,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_TIME, score.getTime());
         values.put(COLUMN_MOVES, score.getMoves());
         values.put(COLUMN_TYPE, score.getType());
-        values.put(COLUMN_MODALITY, score.getModalidad()); // Guardar modalidad
+        values.put(COLUMN_MODALITY, score.getModalidad());
 
         db.insert(TABLE_SCORES, null, values);
         db.close();

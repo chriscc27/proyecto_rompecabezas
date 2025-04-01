@@ -31,6 +31,10 @@
         <action
             android:id="@+id/action_loading_to_foto"
             app:destination="@id/fotoFragment" />
+
+        <action
+            android:id="@+id/action_loading_to_scores"
+            app:destination="@id/scoresFragment" />
     </fragment>
 
     <!-- Menú Principal -->
@@ -57,7 +61,12 @@
 
         <action
             android:id="@+id/action_menu_to_scores"
-            app:destination="@id/scoresFragment" />
+            app:destination="@id/loadingFragment">
+            <argument
+                android:name="target_fragment"
+                app:argType="string"
+                android:defaultValue="ScoreFragment"/>
+        </action>
     </fragment>
 
     <!-- Juego Normal -->
@@ -103,9 +112,12 @@
 
         <action
             android:id="@+id/action_scores_to_menu"
-            app:destination="@id/menuFragment"
-            app:popUpTo="@id/menuFragment"
-            app:popUpToInclusive="false"/>
+            app:destination="@id/loadingFragment">
+            <argument
+                android:name="target_fragment"
+                app:argType="string"
+                android:defaultValue="MenuFragment"/>
+        </action>
     </fragment>
 
 </navigation>

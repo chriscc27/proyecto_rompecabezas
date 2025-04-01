@@ -31,9 +31,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
-import com.example.rompe.DatabaseHelper;
-import com.example.rompe.R;
-import com.example.rompe.Score;
 import android.widget.EditText;
 import android.app.Activity;
 
@@ -46,11 +43,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
@@ -233,7 +228,6 @@ public class FotoFragment extends Fragment {
         startTimer();
     }
 
-
     private int getCachedHeuristic(int[] estado) {
         return calcularHeuristicaOptimizada(estado) * 2;  // Prioriza nodos más profundos
     }
@@ -289,8 +283,6 @@ public class FotoFragment extends Fragment {
                 .show();
     }
 
-
-    // Reemplazar runOnUiThread con:
     private void runOnUiThread(Runnable action) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(action);
@@ -298,13 +290,13 @@ public class FotoFragment extends Fragment {
     }
 
     private void mostrarDialogoExito() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()); // Inicializar correctamente
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("¡Felicidades!");
         String mensaje = "Resuelto en " + moves + " movimientos y " + seconds + " segundos!\n"
                 + "Introduce tu nombre para guardar la puntuación:";
         builder.setMessage(mensaje);
 
-        final EditText input = new EditText(requireContext()); // Corregir 'this' por requireContext()
+        final EditText input = new EditText(requireContext());
         builder.setView(input);
 
         builder.setPositiveButton("Guardar", (dialog, which) -> {
@@ -378,8 +370,6 @@ public class FotoFragment extends Fragment {
         return h;
     }
 
-
-
     private List<Nodo> generarVecinos(Nodo nodo) {
         List<Nodo> vecinos = new ArrayList<>(4);
         int emptyPos = nodo.emptyPos;
@@ -437,7 +427,6 @@ public class FotoFragment extends Fragment {
                 }, i * 500);
             }
 
-            // Mostrar diálogo después de completar la animación
             new Handler(Looper.getMainLooper()).postDelayed(() ->
                             mostrarDialogoReintentar(),
                     camino.size() * 500 + 1000
@@ -466,7 +455,7 @@ public class FotoFragment extends Fragment {
 
             for (int i = 0; i < pieces.size(); i++) {
                 // En displayPuzzle()
-                ImageView imageView = new ImageView(requireContext()); // Corregir 'this' por requireContext()
+                ImageView imageView = new ImageView(requireContext());
                 PuzzlePiece piece = pieces.get(i);
 
                 if (piece.bitmap != null) {
