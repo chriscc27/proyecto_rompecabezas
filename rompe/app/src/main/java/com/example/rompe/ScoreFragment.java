@@ -1,19 +1,28 @@
-// ScoreActivity.java
 package com.example.rompe;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.rompe.DatabaseHelper;
+import com.example.rompe.R;
+import com.example.rompe.Score;
+import com.example.rompe.ScoreAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import androidx.navigation.Navigation;
 
-public class ScoreActivity extends AppCompatActivity {
+public class ScoreFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private ScoreAdapter adapter;
@@ -21,37 +30,51 @@ public class ScoreActivity extends AppCompatActivity {
     private Spinner sizeSpinner, modalitySpinner;
     private TextView tvNoRecords;
 
+
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_scores);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_scores, container, false);
+    }
 
-        dbHelper = new DatabaseHelper(this);
-        sizeSpinner = findViewById(R.id.sizeSpinner);
-        modalitySpinner = findViewById(R.id.modalitySpinner);
-        recyclerView = findViewById(R.id.rvScores);
-        tvNoRecords = findViewById(R.id.tvNoRecords);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
+        dbHelper = new DatabaseHelper(requireContext());
+        sizeSpinner = view.findViewById(R.id.sizeSpinner);
+        modalitySpinner = view.findViewById(R.id.modalitySpinner);
+        recyclerView = view.findViewById(R.id.rvScores);
+        tvNoRecords = view.findViewById(R.id.tvNoRecords);
 
-        recyclerView = findViewById(R.id.rvScores);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new ScoreAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
-        setupSpinners();
 
-        setupBackButton();
+        // Opcional: Agregar divisor entre items
+        recyclerView.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
+
+        setupSpinners();
+        setupBackButton(view);
     }
 
     private void setupSpinners() {
         // Spinner para tamaños
         ArrayAdapter<CharSequence> sizeAdapter = ArrayAdapter.createFromResource(
-                this, R.array.puzzle_sizes, android.R.layout.simple_spinner_item);
+                requireContext(),
+                R.array.puzzle_sizes,
+                android.R.layout.simple_spinner_item
+        );
         sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         sizeSpinner.setAdapter(sizeAdapter);
 
         // Spinner para modalidades
         ArrayAdapter<CharSequence> modalityAdapter = ArrayAdapter.createFromResource(
-                this, R.array.modalities, android.R.layout.simple_spinner_item);
+                requireContext(),
+                R.array.modalities,
+                android.R.layout.simple_spinner_item
+        );
         modalityAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         modalitySpinner.setAdapter(modalityAdapter);
 
@@ -94,8 +117,9 @@ public class ScoreActivity extends AppCompatActivity {
         adapter.updateData(scores);
     }
 
-
-    private void setupBackButton() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+    private void setupBackButton(View view) {
+        view.findViewById(R.id.btnBack).setOnClickListener(v ->
+                Navigation.findNavController(v).navigateUp()
+        );
     }
 }

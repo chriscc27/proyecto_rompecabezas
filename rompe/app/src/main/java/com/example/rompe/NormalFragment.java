@@ -1,22 +1,31 @@
 package com.example.rompe;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.content.Intent;
-import android.widget.EditText;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import android.view.ViewTreeObserver;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import com.example.rompe.DatabaseHelper;
+import com.example.rompe.R;
+import com.example.rompe.Score;
 import android.graphics.drawable.GradientDrawable;
-import androidx.appcompat.app.AppCompatActivity;
+import android.view.ViewTreeObserver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +36,9 @@ import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
 
-public class NormalActivity extends AppCompatActivity {
+public class NormalFragment extends Fragment {
 
+    // Variables miembro (igual que en la Activity)
     private GridLayout gridLayout;
     private TextView[][] grid;
     private int emptyRow, emptyCol;
@@ -45,41 +55,51 @@ public class NormalActivity extends AppCompatActivity {
     private TextView txtNumeroFaltante;
     private int missingNumber;
     private int[] targetPositions;
-
     private boolean isSolving = false;
     private Handler solutionHandler = new Handler();
     private Random random = new Random();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_normal);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_normal, container, false);
+    }
 
-        txtNumeroFaltante = findViewById(R.id.txtNumeroFaltante);
-        Intent intent = getIntent();
-        puzzleSize = intent.getIntExtra("puzzleSize", 3);
-        puzzleSize = Math.max(2, Math.min(puzzleSize, 7));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        gridLayout = findViewById(R.id.gridLayout);
-        timerTextView = findViewById(R.id.timerTextView);
-        btnResolver = findViewById(R.id.btnResolver);
+        // Inicialización de vistas
+        txtNumeroFaltante = view.findViewById(R.id.txtNumeroFaltante);
+        gridLayout = view.findViewById(R.id.gridLayout);
+        timerTextView = view.findViewById(R.id.timerTextView);
+        btnResolver = view.findViewById(R.id.btnResolver);
 
-        btnResolver.setOnClickListener(v -> {
-            if (!isTimerRunning) {
-                Toast.makeText(this, "Primero inicia el juego", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (isSolving) {
-                Toast.makeText(this, "Ya se está resolviendo", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            btnResolver.setEnabled(false);
-            isSolving = true;
-            resolverRompecabezas();
-        });
+        // Obtener argumentos
+        if (getArguments() != null) {
+            puzzleSize = getArguments().getInt("puzzleSize", 3);
+            puzzleSize = Math.max(2, Math.min(puzzleSize, 7));
+        }
+
+        btnResolver.setOnClickListener(v -> handleResolverClick());
 
         inicializarGrid();
     }
+
+    private void handleResolverClick() {
+        if (!isTimerRunning) {
+            Toast.makeText(requireContext(), "Primero inicia el juego", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (isSolving) {
+            Toast.makeText(requireContext(), "Ya se está resolviendo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        btnResolver.setEnabled(false);
+        isSolving = true;
+        resolverRompecabezas();
+    }
+
+
 
     private void inicializarGrid() {
         gridLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -108,7 +128,7 @@ public class NormalActivity extends AppCompatActivity {
 
         for (int i = 0; i < puzzleSize; i++) {
             for (int j = 0; j < puzzleSize; j++) {
-                TextView textView = new TextView(this);
+                TextView textView = new TextView(requireContext());
                 GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                 params.width = params.height = tileSize - 8;
                 params.setMargins(4, 4, 4, 4);
@@ -144,7 +164,7 @@ public class NormalActivity extends AppCompatActivity {
             if (!num.isEmpty()) targetPositions[Integer.parseInt(num)] = i;
         }
 
-        runOnUiThread(() -> txtNumeroFaltante.setText("Falta el número: " + missingNumber));
+        requireActivity().runOnUiThread(() -> txtNumeroFaltante.setText("Falta el número: " + missingNumber));
     }
 
     private void mezclarFichas() {
@@ -214,13 +234,13 @@ public class NormalActivity extends AppCompatActivity {
 
     private void resolverRompecabezas() {
         if (Arrays.equals(currentState, solution.toArray())) {
-            Toast.makeText(this, "El puzzle ya está resuelto", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "El puzzle ya está resuelto", Toast.LENGTH_SHORT).show();
             btnResolver.setEnabled(true);
             return;
         }
 
         new Thread(() -> {
-            PriorityQueue<Nodo> openSet = new PriorityQueue<>(10000, Comparator.comparingInt(n -> n.costoTotal));
+            PriorityQueue<Nodo> openSet = new PriorityQueue<>(10000, (n1, n2) -> Integer.compare(n1.costoTotal, n2.costoTotal));
             Set<String> visited = new HashSet<>(100000, 0.9f);
 
             String[] estadoInicial = Arrays.copyOf(currentState, currentState.length);
@@ -229,7 +249,7 @@ public class NormalActivity extends AppCompatActivity {
             openSet.add(inicial);
             visited.add(estadoToString(estadoInicial));
 
-            while (!openSet.isEmpty() && !isFinishing()) {
+            while (!openSet.isEmpty() && isAdded()) { // Condición corregida
                 Nodo actual = openSet.poll();
 
                 if (actual.heuristica == 0) {
@@ -246,11 +266,13 @@ public class NormalActivity extends AppCompatActivity {
                 }
             }
 
-            runOnUiThread(() -> {
-                Toast.makeText(this, "No se encontró solución", Toast.LENGTH_SHORT).show();
-                btnResolver.setEnabled(true);
-                isSolving = false;
-            });
+            if (isAdded()) {
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(requireContext(), "No se encontró solución", Toast.LENGTH_SHORT).show();
+                    btnResolver.setEnabled(true);
+                    isSolving = false;
+                });
+            }
         }).start();
     }
 
@@ -311,8 +333,8 @@ public class NormalActivity extends AppCompatActivity {
     }
 
     private void mostrarSolucion(List<Nodo> camino) {
-        solutionHandler.removeCallbacksAndMessages(null);
-        new Handler(Looper.getMainLooper()).post(() -> {
+
+        requireActivity().runOnUiThread(() -> { // Asegurar ejecución en UI Thread
             stopTimer();
             btnResolver.setEnabled(true);
             isSolving = false;
@@ -389,7 +411,7 @@ public class NormalActivity extends AppCompatActivity {
 
             if (esResuelto()) {
                 stopTimer();
-                Toast.makeText(this, "¡Resuelto en " + seconds + " segundos!", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "¡Resuelto en " + seconds + " segundos!", Toast.LENGTH_LONG).show();
                 if (!scoreSaved) showNameDialog();
             }
         }
@@ -421,7 +443,7 @@ public class NormalActivity extends AppCompatActivity {
     }
 
     private void mostrarDialogoReintentar(int movimientos) {
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(requireContext())
                 .setTitle(movimientos > 0 ? "¡Solución encontrada!" : "No se encontró solución")
                 .setMessage(movimientos > 0 ?
                         "Se resolvió en " + movimientos + " movimientos. ¿Reintentar?" :
@@ -438,10 +460,10 @@ public class NormalActivity extends AppCompatActivity {
     }
 
     private void showNameDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Guardar puntuación");
 
-        View view = getLayoutInflater().inflate(R.layout.dialog_name, null);
+        View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_name, null);
         EditText etName = view.findViewById(R.id.etName);
 
         builder.setView(view);
@@ -449,7 +471,7 @@ public class NormalActivity extends AppCompatActivity {
             String name = etName.getText().toString().trim();
             if (name.isEmpty()) name = "Anónimo";
             if (name.length() > 20) { // Limitar longitud máxima
-                Toast.makeText(this, "Máximo 20 caracteres", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Máximo 20 caracteres", Toast.LENGTH_SHORT).show();
                 return;
             }
             saveScoreToDatabase(name);
@@ -461,7 +483,7 @@ public class NormalActivity extends AppCompatActivity {
     }
 
     private void saveScoreToDatabase(String name) {
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        DatabaseHelper dbHelper = new DatabaseHelper(requireContext());
         Score score = new Score(
                 0, // El ID se autoincrementa
                 name,
@@ -472,23 +494,23 @@ public class NormalActivity extends AppCompatActivity {
                 "normal"
         );
         dbHelper.saveScore(score);
-        Toast.makeText(this, "Puntuación guardada", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Puntuación guardada", Toast.LENGTH_SHORT).show();
 
         navegarAPuntuaciones();
     }
 
     private void navegarAPuntuaciones() {
-        Intent loadingIntent = new Intent(this, LoadingActivity.class);
-        loadingIntent.putExtra("target_activity", ScoreActivity.class.getName());
-        startActivity(loadingIntent);
-        finish();
+        NavController navController = Navigation.findNavController(requireView());
+        navController.navigate(R.id.action_normalFragment_to_scoresFragment);
     }
 
 
 
+
+
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onDestroyView() {
+        super.onDestroyView();
         handler.removeCallbacksAndMessages(null);
         solutionHandler.removeCallbacksAndMessages(null);
     }

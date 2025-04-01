@@ -1,13 +1,21 @@
 package com.example.rompe;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import com.example.rompe.R;
 import java.util.Random;
 
-public class LoadingActivity extends AppCompatActivity {
+public class LoadingFragment extends Fragment {
 
     private final String[] datosCuriosos = {
             "El primer crucigrama moderno se publicó en 1913 en el New York World.",
@@ -42,41 +50,47 @@ public class LoadingActivity extends AppCompatActivity {
             "Resolver puzzles libera dopamina, la hormona asociada con la satisfacción y el aprendizaje."
     };
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_loading);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_loading, container, false);
+    }
 
-        TextView txtDato = findViewById(R.id.txtDatoCurioso);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Mostrar dato curioso
+        TextView txtDato = view.findViewById(R.id.txtDatoCurioso);
         int indiceAleatorio = new Random().nextInt(datosCuriosos.length);
         txtDato.setText(datosCuriosos[indiceAleatorio]);
 
+        // Obtener y preparar argumentos
+        final Bundle args = getArguments();
+        final String targetFragment = (args != null) ? args.getString("target_fragment", "") : "";
 
-        Intent incomingIntent = getIntent();
-        String targetActivity = incomingIntent.getStringExtra("target_activity");
-        Bundle extras = incomingIntent.getExtras();
+        // Redirección después de 1 segundo
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            NavController navController = Navigation.findNavController(view);
 
-
-        new Handler().postDelayed(() -> {
-            try {
-                if (targetActivity != null && !targetActivity.isEmpty()) {
-                    Class<?> destination = Class.forName(targetActivity);
-                    Intent intent = new Intent(this, destination);
-
-                    if (extras != null) {
-                        intent.putExtras(extras);
-                    }
-
-                    startActivity(intent);
-                } else {
-
-                    startActivity(new Intent(this, MenuActivity.class));
+            // Usar when en lugar de switch para mejor legibilidad
+            if (!targetFragment.isEmpty()) {
+                switch (targetFragment) {
+                    case "NormalFragment":
+                        navController.navigate(R.id.action_loading_to_normal, args);
+                        break;
+                    case "FotoFragment":
+                        navController.navigate(R.id.action_loading_to_foto, args);
+                        break;
+                    case "ScoreFragment":
+                        //navController.navigate(R.id.action_loading_to_scores, args);
+                        break;
+                    default:
+                        navController.navigate(R.id.action_loading_to_menu, args);
+                        break;
                 }
-                finish(); // Cerrar LoadingActivity
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                startActivity(new Intent(this, MenuActivity.class));
-                finish();
+            } else {
+                navController.navigate(R.id.action_loading_to_menu, args);
             }
         }, 1000);
     }

@@ -1,10 +1,14 @@
 package com.example.rompe;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,44 +16,46 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.graphics.Color;
-import androidx.appcompat.app.AlertDialog;
-import android.widget.EditText;
-
-import android.Manifest;
-import java.util.Comparator;
-
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+import com.example.rompe.DatabaseHelper;
+import com.example.rompe.R;
+import com.example.rompe.Score;
+import android.widget.EditText;
+import android.app.Activity;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
-import android.graphics.Canvas;
-import android.graphics.Paint;
+import java.util.Set;
 
-public class FotoActivity extends AppCompatActivity {
+public class FotoFragment extends Fragment {
     private static final int PICK_IMAGE = 1;
     private static final int REQUEST_IMAGE_CAPTURE = 2;
     private static final int REQUEST_CAMERA_PERMISSION = 100;
@@ -82,35 +88,72 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_foto);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_foto, container, false);
+    }
 
-        gridLayout = findViewById(R.id.gridLayout);
-        fullImageView = findViewById(R.id.fullImageView);
-        timerTextView = findViewById(R.id.timerTextView);
-        btnResolver = findViewById(R.id.btnResolver);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        puzzleSize = getIntent().getIntExtra("puzzleSize", 3);
+        gridLayout = view.findViewById(R.id.gridLayout);
+        fullImageView = view.findViewById(R.id.fullImageView);
+        timerTextView = view.findViewById(R.id.timerTextView);
+        btnResolver = view.findViewById(R.id.btnResolver);
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        // Validar que los argumentos existen
+        if (getArguments() == null) {
+            Toast.makeText(getContext(), "Error: Argumentos no proporcionados", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(view).popBackStack(); // Regresar si no hay argumentos
+            return;
         }
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
+        puzzleSize = getArguments().getInt("puzzleSize", 3);
+        String modo = getArguments().getString("modo");
+
+        if (modo == null) {
+            Toast.makeText(getContext(), "Error: Modo no especificado", Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(view).popBackStack();
+            return;
         }
 
-        String modo = getIntent().getStringExtra("modo");
-        if (modo != null) {
+        checkPermissions(modo);
+
+        btnResolver.setOnClickListener(v -> resolverRompecabezas());
+    }
+
+
+    private void checkPermissions(String modo) {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        } else if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
+        } else {
+            // Permisos ya concedidos, proceder
             if (modo.equals("galeria")) {
                 abrirGaleria();
             } else if (modo.equals("camara")) {
                 abrirCamara();
             }
         }
+    }
 
-        btnResolver.setOnClickListener(v -> resolverRompecabezas());
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                abrirCamara();
+            } else {
+                Toast.makeText(getContext(), "Permiso de cámara denegado", Toast.LENGTH_SHORT).show();
+            }
+        } else if (requestCode == REQUEST_STORAGE_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                abrirGaleria();
+            } else {
+                Toast.makeText(getContext(), "Permiso de almacenamiento denegado", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void createPuzzle(Bitmap bitmap) {
@@ -227,14 +270,14 @@ public class FotoActivity extends AppCompatActivity {
             }
 
             runOnUiThread(() -> {
-                Toast.makeText(this, "Solución no encontrada", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Solución no encontrada", Toast.LENGTH_SHORT).show(); // Corregir contexto
                 regeneratePuzzle();
             });
         }).start();
     }
 
     private void mostrarDialogoReintentar() {
-        new AlertDialog.Builder(this)
+        new AlertDialog.Builder(requireContext())
                 .setTitle("Sigue intentándolo")
                 .setMessage("¿Quieres probar de nuevo?")
                 .setPositiveButton("Aceptar", (dialog, which) -> {
@@ -247,14 +290,21 @@ public class FotoActivity extends AppCompatActivity {
     }
 
 
+    // Reemplazar runOnUiThread con:
+    private void runOnUiThread(Runnable action) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(action);
+        }
+    }
+
     private void mostrarDialogoExito() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext()); // Inicializar correctamente
         builder.setTitle("¡Felicidades!");
         String mensaje = "Resuelto en " + moves + " movimientos y " + seconds + " segundos!\n"
                 + "Introduce tu nombre para guardar la puntuación:";
         builder.setMessage(mensaje);
 
-        final EditText input = new EditText(this);
+        final EditText input = new EditText(requireContext()); // Corregir 'this' por requireContext()
         builder.setView(input);
 
         builder.setPositiveButton("Guardar", (dialog, which) -> {
@@ -271,10 +321,7 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     private void navegarAPuntuaciones() {
-        Intent loadingIntent = new Intent(this, LoadingActivity.class);
-        loadingIntent.putExtra("target_activity", ScoreActivity.class.getName());
-        startActivity(loadingIntent);
-        finish();
+        Navigation.findNavController(requireView()).navigate(R.id.action_fotoFragment_to_scoresFragment);
     }
 
     private void regeneratePuzzle() {
@@ -286,7 +333,7 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     private void saveScoreToDatabase(String name) {
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        DatabaseHelper dbHelper = new DatabaseHelper(requireContext());
         Score score = new Score(
                 0,
                 name,
@@ -298,7 +345,7 @@ public class FotoActivity extends AppCompatActivity {
         );
         dbHelper.saveScore(score);
 
-        Toast.makeText(this, "Puntuación guardada", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Puntuación guardada", Toast.LENGTH_SHORT).show();
         navegarAPuntuaciones();
     }
 
@@ -412,13 +459,14 @@ public class FotoActivity extends AppCompatActivity {
     }
 
     private void displayPuzzle(List<PuzzlePiece> pieces) {
-        runOnUiThread(() -> {
+        requireActivity().runOnUiThread(() -> {
             gridLayout.removeAllViews();
             gridLayout.setColumnCount(puzzleSize);
             gridLayout.setRowCount(puzzleSize);
 
             for (int i = 0; i < pieces.size(); i++) {
-                ImageView imageView = new ImageView(this);
+                // En displayPuzzle()
+                ImageView imageView = new ImageView(requireContext()); // Corregir 'this' por requireContext()
                 PuzzlePiece piece = pieces.get(i);
 
                 if (piece.bitmap != null) {
@@ -451,7 +499,7 @@ public class FotoActivity extends AppCompatActivity {
 
             if (isPuzzleSolved()) {
                 stopTimer();
-                Toast.makeText(this, "¡Resuelto en " + seconds + " segundos!", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "¡Resuelto en " + seconds + " segundos!", Toast.LENGTH_LONG).show();
             }
         }
         moves++;
@@ -494,18 +542,18 @@ public class FotoActivity extends AppCompatActivity {
         isTimerRunning = false;
     }
 
+    // Modificar métodos de captura de imagen
     private void abrirGaleria() {
-        Intent intent = new Intent(Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_IMAGE);
     }
 
     private void abrirCamara() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
             try {
-                photoFile = createImageFile(); // Guardar en la variable miembro
-                photoUri = FileProvider.getUriForFile(this,
+                photoFile = createImageFile();
+                photoUri = FileProvider.getUriForFile(requireContext(),
                         "com.example.rompe.fileprovider", photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
@@ -517,28 +565,33 @@ public class FotoActivity extends AppCompatActivity {
 
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+
+        File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+
         return File.createTempFile(
                 "JPEG_" + timeStamp + "_",
                 ".jpg",
-                getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                storageDir // Usar el directorio obtenido
         );
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
             Bitmap bitmap = null;
             try {
                 if (requestCode == PICK_IMAGE && data != null) {
                     Uri uri = data.getData();
                     bitmap = loadAndRotateBitmap(uri);
                 } else if (requestCode == REQUEST_IMAGE_CAPTURE) {
-                    // Leer EXIF desde el archivo directamente
-                    ExifInterface exif = new ExifInterface(photoFile.getAbsolutePath());
-                    int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                    bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
-                    bitmap = rotateBitmap(bitmap, orientation);
+                    if (photoFile != null) {
+                        ExifInterface exif = new ExifInterface(photoFile.getAbsolutePath());
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                        bitmap = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+                        bitmap = rotateBitmap(bitmap, orientation);
+                    }
                 }
 
                 if (bitmap != null) {
@@ -550,16 +603,17 @@ public class FotoActivity extends AppCompatActivity {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                Toast.makeText(getContext(), "Error al procesar la imagen", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
     private Bitmap loadAndRotateBitmap(Uri uri) throws IOException {
-        InputStream inputStream = getContentResolver().openInputStream(uri);
+        InputStream inputStream = requireActivity().getContentResolver().openInputStream(uri);
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
         inputStream.close();
 
-        inputStream = getContentResolver().openInputStream(uri);
+        inputStream = requireActivity().getContentResolver().openInputStream(uri);
         ExifInterface exif = new ExifInterface(inputStream);
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
         inputStream.close();
@@ -616,15 +670,6 @@ public class FotoActivity extends AppCompatActivity {
         return Bitmap.createScaledBitmap(bitmap, targetSize, targetSize, true);
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                abrirCamara();
-            }
-        }
-    }
 
     private static class Nodo {
         int[] estado;
